@@ -66,7 +66,7 @@ def tasks():
              task_id=row[3]) for row in cur.fetchall()
     ]
     cur = g.db.execute(
-        'SELECT name, due_date, priority, task_id, from tasks where status=0'
+        'SELECT name, due_date, priority, task_id from tasks where status=0'
     )
     closed_tasks = [
         dict(name=row[0], due_date=row[1], priority=row[2],
@@ -96,7 +96,12 @@ def new_task():
         return redirect(url_for('tasks'))
     else:
         g.db.execute('INSERT into tasks (name, due_date, priority, status) \
-            values (?, ?, ?, 1)' [name, date, priority])
+            values (?, ?, ?, 1)', [
+                request.form['name'],
+                request.form['due_date'],
+                request.form['priority']
+            ]
+        )
         g.db.commit()
         g.db.close()
         flash('New entry created.')

@@ -10,4 +10,4 @@ WTF_CSRF_ENABLED = True
 SECRET_KEY = 'changeme'
 
 # define the full path for the database
-DATABSE_PATH = os.path.join(basedir, DATABASE)
+DATABASE_PATH = os.path.join(basedir, DATABASE)
