@@ -3,11 +3,11 @@
 from views import db
 
 
-class Task(db.model):
+class Task(db.Model):
 
     __tablename__ = "tasks"
 
-    task_id = db.Column(db.integer, primary_key=True)
+    task_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     due_date = db.Column(db.Date, nullable=False)
     priority = db.Column(db.Integer, nullable=False)
