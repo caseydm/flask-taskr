@@ -6,6 +6,7 @@ from functools import wraps
 from flask import Flask, flash, redirect, render_template, \
     request, session, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
 import datetime
 
 
@@ -38,6 +39,16 @@ def flash_errors(form):
             ), 'error')
 
 
+def open_tasks():
+    return db.session.query(Task).filter_by(
+        status='1').order_by(Task.due_date.asc())
+
+
+def closed_tasks():
+    return db.session.query(Task).filter_by(
+        status='0').order_by(Task.due_date.asc())
+
+
 # route handlers
 
 # register user
@@ -52,11 +63,14 @@ def register():
                 form.email.data,
                 form.password.data
             )
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Thanks for registering.')
-            return redirect(url_for('login'))
-        flash_errors(form)
+            try:
+                db.session.add(new_user)
+                db.session.commit()
+                flash('Thanks for registering.')
+                return redirect(url_for('login'))
+            except IntegrityError:
+                error = 'That username and/or email is already taken.'
+                return render_template('register.html', form=form, error=error)
     return render_template('register.html', form=form, error=error)
 
 
@@ -93,15 +107,11 @@ def logout():
 @app.route('/tasks/')
 @login_required
 def tasks():
-    open_tasks = db.session.query(Task) \
-        .filter_by(status='1').order_by(Task.due_date.asc())
-    closed_tasks = db.session.query(Task) \
-        .filter_by(status='0').order_by(Task.due_date.asc())
     return render_template(
         'tasks.html',
         form=AddTaskForm(request.form),
-        open_tasks=open_tasks,
-        closed_tasks=closed_tasks
+        open_tasks=open_tasks(),
+        closed_tasks=closed_tasks()
     )
 
 
@@ -125,9 +135,13 @@ def new_task():
             db.session.commit()
             flash('New entry created')
             return redirect(url_for('tasks'))
-        else:
-            return render_template('tasks.html', form=form, error=error)
-    return render_template('tasks.html', form=form, error=error)
+    return render_template(
+        'tasks.html',
+        form=form,
+        error=error,
+        open_tasks=open_tasks(),
+        closed_tasks=closed_tasks()
+    )
 
 
 # mark tasks as complete
