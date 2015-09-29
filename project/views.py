@@ -28,6 +28,15 @@ def login_required(test):
     return wrap
 
 
+def flash_errors(form):
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(u"Error in the %s field - %s" % (
+                getattr(form, field).label.text,
+                error
+            ))
+
+
 # route handlers
 
 # register user
@@ -46,7 +55,8 @@ def register():
             db.session.commit()
             flash('Thanks for registering.')
             return redirect(url_for('login'))
-    render_template('register.html', form=form, error=error)
+        flash_errors(form)
+    return render_template('register.html', form=form, error=error)
 
 
 # login user
