@@ -6,6 +6,7 @@ from functools import wraps
 from flask import Flask, flash, redirect, render_template, \
     request, session, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
+import datetime
 
 
 # config
@@ -113,7 +114,9 @@ def new_task():
                 form.name.data,
                 form.due_date.data,
                 form.priority.data,
-                1
+                datetime.datetime.utcnow(),
+                '1',
+                '1'
             )
             db.session.add(new_task)
             db.session.commit()
